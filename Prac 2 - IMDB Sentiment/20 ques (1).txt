@@ -1,0 +1,62 @@
+🟢 Practical 2: IMDB Sentiment Analysis (DNN Classification)
+🎤 20 Viva Questions + Answers
+
+What is the objective of this practical?
+👉 The objective is to classify movie reviews as positive or negative using deep learning.
+
+What type of problem is this?
+👉 This is a binary classification problem.
+
+What is the IMDB dataset?
+👉 It is a dataset of movie reviews labeled as positive or negative.
+
+How is text represented in this dataset?
+👉 Text is converted into sequences of numbers representing word indexes.
+
+Why do we use get_word_index()?
+👉 It maps words to integers so that the model can process text data.
+
+What is padding and why is it used?
+👉 Padding ensures all sequences are of equal length for uniform input to the model.
+
+What is an Embedding layer?
+👉 It converts words into dense vector representations for better learning.
+
+Why do we use a Sequential model here?
+👉 Sequential model is simple and suitable for stacking layers in order.
+
+Why is sigmoid used in output layer?
+👉 Sigmoid produces output between 0 and 1, suitable for binary classification.
+
+What is binary crossentropy?
+👉 It is a loss function used to measure error in binary classification tasks.
+
+What is the role of optimizer?
+👉 It adjusts weights to minimize the loss during training.
+
+What is accuracy?
+👉 Accuracy is the percentage of correct predictions made by the model.
+
+What does model.fit() do?
+👉 It trains the model using training data over multiple epochs.
+
+Why is preprocessing required for text?
+👉 Because neural networks cannot understand raw text directly.
+
+What is tokenization?
+👉 Tokenization converts words into numerical form.
+
+What is overfitting in this model?
+👉 When the model performs well on training data but poorly on test data.
+
+What does model.evaluate() do?
+👉 It checks model performance on test data.
+
+What does model.predict() do?
+👉 It predicts whether a review is positive or negative.
+
+Why deep learning for NLP?
+👉 Deep learning captures complex patterns in language data.
+
+What improvement can you make in this model?
+👉 We can add more layers or use LSTM for better performance.
