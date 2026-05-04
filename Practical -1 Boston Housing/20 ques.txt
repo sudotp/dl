@@ -1,0 +1,61 @@
+🔵 Practical 1: Boston Housing (DNN Regression)
+🎤 20 Viva Questions + Answers
+What problem are you solving in this practical?
+👉 In this practical, we are solving a regression problem to predict house prices based on different input features.
+
+Why did you choose a Deep Neural Network for this task?
+👉 A Deep Neural Network is used because it can learn complex relationships between input features and continuous output values.
+
+What is the role of Pandas in your code?
+👉 Pandas is used to load and handle the dataset in a structured tabular format.
+
+Why do you use df.head()?
+👉 It is used to view the first few rows of the dataset to understand its structure.
+
+What does df.info() provide?
+👉 It gives information about data types, number of columns, and presence of null values.
+
+Why do we separate X and y?
+👉 X contains input features and y contains the target variable which we want to predict.
+
+Why is normalization important?
+👉 Normalization scales the data to a smaller range, which improves model performance and training speed.
+
+What is MinMaxScaler?
+👉 MinMaxScaler transforms features into a range between 0 and 1.
+
+Why do we split data into training and testing sets?
+👉 This helps to evaluate how well the model performs on unseen data.
+
+What is a Sequential model?
+👉 Sequential model is a linear stack of layers where each layer is added one after another.
+
+Why do you use Dense layers?
+👉 Dense layers are fully connected layers used to learn patterns from input data.
+
+Why is ReLU activation used?
+👉 ReLU helps in faster training and avoids vanishing gradient problems.
+
+Why is the output layer having only 1 neuron?
+👉 Because we are predicting a single continuous value (house price).
+
+Why is MSE used as loss function?
+👉 Mean Squared Error is suitable for regression as it measures difference between predicted and actual values.
+
+What is the role of optimizer?
+👉 Optimizer updates model weights to minimize the loss function.
+
+Why did you choose Adam optimizer?
+👉 Adam is efficient and adapts learning rate automatically during training.
+
+What does model.fit() do?
+👉 It trains the model by adjusting weights based on input data.
+
+What is an epoch?
+👉 An epoch is one complete pass through the entire training dataset.
+
+What does model.predict() do?
+👉 It generates predictions for new or test data using the trained model.
+
+How do you evaluate your model?
+👉 The model is evaluated using test data and checking prediction accuracy or loss.
