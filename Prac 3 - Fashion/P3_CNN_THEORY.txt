@@ -1,0 +1,119 @@
+================================================================
+PRACTICAL 3 — THEORY
+Fashion MNIST Clothing Classifier using CNN
+================================================================
+
+AIM:
+To classify fashion clothing images into 10 categories
+using a Convolutional Neural Network (CNN).
+
+DATASET:
+- Fashion MNIST: 70,000 grayscale images (28×28 pixels)
+- 60,000 training + 10,000 testing
+- 10 classes: T-shirt, Trouser, Pullover, Dress, Coat,
+              Sandal, Shirt, Sneaker, Bag, Ankle boot
+
+================================================================
+1. WHAT IS CNN?
+================================================================
+CNN (Convolutional Neural Network) is designed for image data.
+It automatically detects features like edges, shapes, textures.
+
+Why CNN over regular DNN?
+- DNN flattens image → loses 2D spatial structure
+- CNN preserves the 2D structure using filters
+- CNN gives higher accuracy on image tasks (~90% vs ~85%)
+
+================================================================
+2. DATA PREPROCESSING
+================================================================
+a) Normalization: X / 255.0 → pixel values 0-255 become 0.0-1.0
+   WHY? Small values = faster and more stable training.
+
+b) Reshape: (60000, 28, 28) → (60000, 28, 28, 1)
+   CNN needs 4D input: (samples, height, width, channels)
+   channels=1 because grayscale. Color images = 3.
+
+================================================================
+3. CNN LAYERS EXPLAINED
+================================================================
+Conv2D (Convolutional Layer):
+  - Applies filters (small matrices) across the image
+  - Each filter detects one pattern (edge, curve, etc.)
+  - Block 1: 32 filters of 3×3 → detects basic patterns
+  - Block 2: 64 filters of 3×3 → detects complex patterns
+  - Output size = Input size - Filter size + 1 = 28-3+1 = 26
+  - ReLU applied after each Conv2D
+
+MaxPooling2D:
+  - Divides feature map into 2×2 blocks, keeps MAX value
+  - Reduces size by half: (26,26) → (13,13)
+  - Reduces computation, makes model robust to object shifts
+
+Flatten:
+  - Converts 3D maps to 1D vector
+  - (5,5,64) → 1600 values
+  - Required before Dense layers
+
+================================================================
+4. MODEL ARCHITECTURE
+================================================================
+Layer                       | Output Shape
+----------------------------|---------------
+Conv2D(32, 3×3, ReLU)       | (26, 26, 32)
+MaxPooling2D(2×2)           | (13, 13, 32)
+Conv2D(64, 3×3, ReLU)       | (11, 11, 64)
+MaxPooling2D(2×2)           | (5, 5, 64)
+Flatten                     | (1600,)
+Dense(128, ReLU)            | (128,)
+Dropout(0.5)                | (128,)
+Dense(10, Softmax)          | (10,)
+
+================================================================
+5. KEY CONCEPTS
+================================================================
+Softmax (output activation):
+  Converts raw scores → probabilities that sum to 1.
+  10 outputs, highest probability = predicted class.
+  Example: [0.01, 0.02, 0.90...] → class 2 (Pullover)
+
+Dropout(0.5):
+  Turns off 50% neurons randomly during training.
+  Prevents overfitting. Disabled during testing.
+
+================================================================
+6. COMPILATION & TRAINING
+================================================================
+Optimizer: Adam
+
+Loss: sparse_categorical_crossentropy
+  - For multiclass (3+ classes) with INTEGER labels (0-9)
+  - If labels were one-hot → use categorical_crossentropy
+  - Binary CE is only for 2-class problems
+
+Training: epochs=10, batch_size=64, validation_split=0.1
+
+================================================================
+7. EVALUATION
+================================================================
+Accuracy: ~90-92% on 10,000 test images
+
+Confusion Matrix:
+  10×10 table. Rows = actual, Columns = predicted.
+  Diagonal = correct. Off-diagonal = mistakes.
+  Helps find which classes are confused (e.g. Shirt vs T-shirt)
+
+Classification Report:
+  Precision = Of predicted X, how many are truly X?
+  Recall    = Of actual X, how many did model find?
+  F1-Score  = Balance of Precision and Recall
+
+================================================================
+CONCLUSION
+================================================================
+- CNN used for image classification (10 clothing classes)
+- Conv2D detects patterns, MaxPooling reduces size
+- Softmax output for multiclass, sparse CE loss
+- Dropout prevents overfitting
+- Achieved ~90-92% accuracy on Fashion MNIST
+================================================================

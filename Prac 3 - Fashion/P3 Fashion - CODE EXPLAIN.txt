@@ -1,0 +1,244 @@
+================================================================
+PRACTICAL 3 — FASHION MNIST CLOTHING CLASSIFIER
+Convolutional Neural Network (CNN) — Multiclass Classification
+================================================================
+
+WHAT IS THIS?
+We classify 28×28 grayscale images of clothing into 10 categories using CNN.
+Multiclass Classification — 10 possible output classes.
+Dataset: Fashion MNIST (built into Keras) — 60,000 training + 10,000 test images.
+10 classes: T-shirt, Trouser, Pullover, Dress, Coat, Sandal, Shirt, Sneaker, Bag, Ankle boot.
+
+================================================================
+STEP 1 — Import Libraries
+================================================================
+Code: import numpy, matplotlib, tensorflow, keras, fashion_mnist, layers...
+
+- numpy (np)       → array/math operations
+- matplotlib (plt) → visualize images and graphs
+- tensorflow (tf), keras → build CNN model
+- fashion_mnist    → built-in Keras dataset (no external file needed)
+- layers           → provides Conv2D, MaxPooling2D, Dense, Dropout, Flatten
+
+- class_names = ['T-shirt/top', 'Trouser', ...] → list of 10 label names
+  Used to display human-readable names instead of numbers (0-9)
+
+================================================================
+STEP 2 — Load Dataset
+================================================================
+Code: (X_train, y_train), (X_test, y_test) = fashion_mnist.load_data()
+
+- fashion_mnist.load_data() → downloads and loads dataset automatically
+- X_train: 60,000 images, shape (60000, 28, 28) — grayscale, 28×28 pixels
+- X_test:  10,000 images, shape (10000, 28, 28)
+- y_train, y_test → integer labels 0-9 for each image
+- Each pixel value is 0-255 (0=black, 255=white)
+
+================================================================
+STEP 3 — Visualize Sample Images
+================================================================
+Code: plt.figure(figsize=(12,5))
+      for i in range(15):
+          plt.subplot(3, 5, i+1)
+          plt.imshow(X_train[i], cmap='gray')
+          plt.title(class_names[y_train[i]], fontsize=8)
+          plt.axis('off')
+
+- plt.figure(figsize=(12,5)) → creates a figure 12 wide, 5 tall
+- plt.subplot(3, 5, i+1) → creates a 3-row, 5-column grid; places image at position i+1
+- plt.imshow(X_train[i], cmap='gray') → displays image i in grayscale
+- class_names[y_train[i]] → converts integer label to clothing name for title
+- plt.axis('off') → hides axis numbers for cleaner look
+- Shows first 15 training images to visually confirm dataset is correct
+
+================================================================
+STEP 4 — Preprocess Data
+================================================================
+Code: X_train = X_train / 255.0
+      X_test  = X_test  / 255.0
+      X_train = X_train.reshape(-1, 28, 28, 1)
+      X_test  = X_test.reshape(-1, 28, 28, 1)
+
+Part A — Normalization:
+- X_train / 255.0 → divides every pixel by 255
+- Converts range 0-255 → 0.0 to 1.0
+- WHY? Neural networks train better with small values (0-1)
+  Large values cause unstable gradients and slow learning
+
+Part B — Reshaping:
+- CNN needs 4D input: (samples, height, width, channels)
+- Original shape: (60000, 28, 28) — missing channel dimension
+- reshape(-1, 28, 28, 1):
+    -1 → keep the number of samples as-is (60000)
+    1 → channels=1 because GRAYSCALE (color images would be 3)
+- New shape: (60000, 28, 28, 1) — now ready for CNN
+
+================================================================
+STEP 5 — Build the CNN Model
+================================================================
+Code: model = keras.Sequential([
+          Conv2D(32, (3,3), activation='relu', input_shape=(28,28,1)),
+          MaxPooling2D(2, 2),
+          Conv2D(64, (3,3), activation='relu'),
+          MaxPooling2D(2, 2),
+          Flatten(),
+          Dense(128, activation='relu'),
+          Dropout(0.5),
+          Dense(10, activation='softmax')
+      ])
+      model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
+
+Layer by layer:
+
+- Conv2D(32, (3,3), activation='relu', input_shape=(28,28,1)):
+    32 filters (kernels), each of size 3×3
+    Each filter slides across the image and detects ONE pattern (edge, curve, etc.)
+    32 filters = 32 different patterns detected simultaneously
+    input_shape=(28,28,1) → tells model the input size
+    ReLU removes negative values from feature maps
+    Output shape: (26, 26, 32) — 26 because 28-3+1=26
+
+- MaxPooling2D(2, 2):
+    Divides each feature map into 2×2 blocks
+    Keeps only the MAXIMUM value in each block
+    Reduces size by HALF: (26,26,32) → (13,13,32)
+    WHY? Reduces computation, keeps important features, makes model robust
+
+- Conv2D(64, (3,3), activation='relu'):
+    64 filters — more than block 1 to detect MORE complex patterns
+    Combinations of edges found in block 1 → shapes, textures
+    Output: (11,11,64)
+
+- MaxPooling2D(2, 2):
+    Halves again: (11,11,64) → (5,5,64)
+
+- Flatten():
+    Converts 3D feature maps to 1D vector
+    (5, 5, 64) → 1600 values in a flat array
+    WHY? Dense layers only accept 1D input
+
+- Dense(128, activation='relu'):
+    128 neurons, fully connected hidden layer
+    Learns which feature combinations belong to which clothing class
+    ReLU activation
+
+- Dropout(0.5):
+    Randomly disables 50% of the 128 neurons during each training batch
+    Prevents overfitting — model can't rely on any one neuron
+    Disabled during testing (all neurons active for prediction)
+
+- Dense(10, activation='softmax'):
+    10 neurons — one per class
+    Softmax: converts raw scores to probabilities that SUM TO 1
+    E.g. [0.01, 0.02, 0.90, 0.03...] → class 2 (Pullover), 90% confident
+    np.argmax() picks the class with HIGHEST probability
+
+- model.compile():
+    optimizer='adam' → adaptive gradient descent
+    loss='sparse_categorical_crossentropy' → loss for multiclass with integer labels
+    (NOT binary_crossentropy — that's for 2 classes only)
+    metrics=['accuracy'] → track accuracy
+
+- model.summary() → prints all layers, shapes, total trainable parameters
+
+================================================================
+STEP 6 — Train the Model
+================================================================
+Code: history = model.fit(X_train, y_train, epochs=10, batch_size=64, validation_split=0.1)
+
+- model.fit() → starts training
+- epochs=10 → model sees all training data 10 times
+- batch_size=64 → 64 images processed per weight update
+- validation_split=0.1 → 10% (6,000 images) kept for validation
+- history → stores accuracy and loss per epoch for graphs
+
+================================================================
+STEP 7 — Evaluate
+================================================================
+Code: test_loss, test_acc = model.evaluate(X_test, y_test, verbose=0)
+
+- Runs model on 10,000 test images (never seen during training)
+- test_loss → sparse categorical cross-entropy on test data
+- test_acc → accuracy (typically ~90-92%)
+- verbose=0 → no printing per batch
+
+================================================================
+STEP 8 — Plot Graphs
+================================================================
+Code: plt.plot(history.history['accuracy']...)
+      plt.plot(history.history['loss']...)
+
+- Graph 1 (Accuracy vs Epochs): Both train and val accuracy should go UP
+- Graph 2 (Loss vs Epochs): Both train and val loss should go DOWN
+- If val_accuracy falls or val_loss rises → overfitting
+
+================================================================
+STEP 9 — Predict on Test Images (Visual)
+================================================================
+Code: predictions = model.predict(X_test)
+      np.argmax(predictions[i]) → predicted class
+      color = 'green' if pred == true else 'red'
+
+- model.predict(X_test) → gives probability array for all 10,000 images
+- np.argmax(predictions[i]) → finds index of highest probability = predicted class
+- class_names[np.argmax(...)] → converts number to clothing name
+- GREEN title = prediction matches actual label (correct)
+- RED title = prediction is wrong (mistake)
+- Displays 10 images with their predicted and actual labels
+
+================================================================
+STEP 10 — Confusion Matrix + Classification Report
+================================================================
+Code: y_pred = np.argmax(model.predict(X_test), axis=1)
+      cm = confusion_matrix(y_test, y_pred)
+      sns.heatmap(cm, ...)
+      classification_report(y_test, y_pred)
+
+- np.argmax(..., axis=1) → gets predicted class for all 10,000 images at once
+- confusion_matrix(y_test, y_pred):
+    10×10 grid. Row = actual class, Column = predicted class
+    Diagonal = correct predictions
+    Off-diagonal = mistakes (e.g. T-shirt predicted as Shirt)
+- sns.heatmap() → displays confusion matrix as colored grid with numbers
+    annot=True → shows numbers inside each cell
+    fmt='d' → integer format
+    cmap='Blues' → blue color theme
+- classification_report():
+    Precision: Of all predicted as class X, how many are truly X?
+    Recall: Of all actual class X, how many did model find?
+    F1-Score: Balance of Precision and Recall (higher = better)
+
+================================================================
+QUICK Q&A FOR TEACHER
+================================================================
+
+Q: What is CNN? Why use it instead of Dense?
+A: CNN uses filters to detect patterns in images (edges, shapes). Dense treats each pixel independently and loses the 2D structure. CNN preserves spatial relationships and achieves higher accuracy.
+
+Q: What does Conv2D do?
+A: Applies filters (small matrices) that slide across the image. Each filter detects one pattern. 32 filters = 32 patterns detected. Creates feature maps.
+
+Q: What is MaxPooling?
+A: Takes the maximum value from each 2×2 block. Reduces image size by half. Reduces computation and makes model robust to small shifts in objects.
+
+Q: What is Flatten?
+A: Converts 3D feature maps (height × width × channels) to a 1D vector. Required before Dense layers.
+
+Q: What is Softmax?
+A: Converts raw scores to probabilities summing to 1. Used for multiclass output. Class with highest probability = prediction.
+
+Q: What loss function is used and why?
+A: sparse_categorical_crossentropy — for multiclass problems where labels are integers (0-9). If labels were one-hot, we'd use categorical_crossentropy.
+
+Q: What is a Confusion Matrix?
+A: A 10×10 table. Diagonal = correct predictions. Off-diagonal = mistakes. Shows which classes the model confuses with each other.
+
+Q: Why normalize pixels (divide by 255)?
+A: Converts 0-255 to 0.0-1.0. Neural networks train faster and more stably with small values.
+
+Q: Why reshape to (28, 28, 1)?
+A: CNN needs 4D input. Last dimension = channels. 1 = grayscale. RGB would be 3.
+
+================================================================
+END — PRACTICAL 3
+================================================================

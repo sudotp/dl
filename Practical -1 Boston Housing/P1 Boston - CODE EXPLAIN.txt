@@ -1,0 +1,205 @@
+================================================================
+PRACTICAL 1 — BOSTON HOUSING PRICE PREDICTION
+Deep Neural Network — Regression Problem
+================================================================
+
+WHAT IS THIS?
+We predict house prices in Boston using a Deep Neural Network.
+It's a REGRESSION problem — output is a number (price), not a category.
+Dataset: 506 houses, 13 features (like rooms, crime rate), target = MEDV (price in $1000s).
+
+================================================================
+CELL 1 — Install TensorFlow
+================================================================
+Code: !pip install tensorflow
+
+- "!" means run a terminal command inside Jupyter.
+- pip install tensorflow downloads and installs the TensorFlow library.
+- TensorFlow is the deep learning framework we use.
+
+================================================================
+CELL 2 — Import Libraries
+================================================================
+Code: import numpy as np, pandas as pd, matplotlib.pyplot as plt...
+
+- numpy (np)       → math operations on arrays
+- pandas (pd)      → load and handle CSV dataset
+- matplotlib (plt) → draw graphs
+- train_test_split → split data into train and test
+- StandardScaler   → normalize/scale the data
+- mean_squared_error, r2_score → measure model accuracy
+- tensorflow (tf), keras → build and train the neural network
+- print(tf.__version__) → confirms TensorFlow is installed
+
+================================================================
+CELL 3 — Load Dataset
+================================================================
+Code: df = pd.read_csv('housing.csv', sep=r'\s+', header=None, names=col_names)
+
+- pd.read_csv() → reads the file from disk into a DataFrame
+- sep=r'\s+' → file is space-separated (not comma)
+- header=None → file has NO header row, so we give names manually
+- names=col_names → assigns our 14 column names
+- col_names includes: CRIM, ZN, INDUS, NOX, RM, AGE... and MEDV (target)
+- df.shape → prints (506, 14) — 506 rows, 14 columns
+- df.head() → shows first 5 rows to verify data loaded correctly
+
+================================================================
+CELL 4 — Explore Data
+================================================================
+Code: df.info(), df.describe()
+
+- df.info() → shows data type of each column + non-null count (checks for missing values)
+- df.describe() → shows statistics: mean, min, max, std for all columns
+- This helps understand the data before processing
+
+================================================================
+CELL 5 — Check Missing Values
+================================================================
+Code: df.isnull().sum().sum()
+
+- df.isnull() → returns True/False for each cell (True = missing)
+- .sum().sum() → counts total missing values in entire dataset
+- If result is 0, data is clean — no missing values
+- Also prints min and max of MEDV to see price range
+
+================================================================
+CELL 6 — Separate Features & Target, Train-Test Split
+================================================================
+Code: X = df.drop('MEDV', axis=1).values
+      y = df['MEDV'].values
+      X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+- X → all 13 input features (everything except MEDV)
+- y → target column MEDV (house prices we want to predict)
+- .values → converts pandas DataFrame to numpy array
+- train_test_split() → splits data:
+    test_size=0.2 → 20% for testing, 80% for training
+    random_state=42 → same split every time (reproducibility)
+- Result: X_train=~404 rows, X_test=~102 rows
+
+================================================================
+CELL 7 — Normalize / Scale Data
+================================================================
+Code: scaler = StandardScaler()
+      X_train = scaler.fit_transform(X_train)
+      X_test  = scaler.transform(X_test)
+
+- StandardScaler makes all features have Mean=0, Std=1
+- WHY? Features have very different ranges (CRIM: 0-89, TAX: 187-711).
+  Neural networks train poorly with such different scales.
+- fit_transform(X_train) → learns mean/std FROM training data, then scales it
+- transform(X_test) → scales test data using SAME mean/std (does NOT relearn)
+- This prevents data leakage — test data stats must NOT influence training
+
+================================================================
+CELL 8 — Build the Neural Network
+================================================================
+Code: model = keras.Sequential([
+          Dense(64, activation='relu', input_shape=(...)),
+          Dense(32, activation='relu'),
+          Dense(16, activation='relu'),
+          Dense(1)
+      ])
+      model.compile(optimizer='adam', loss='mse', metrics=['mae'])
+
+- keras.Sequential → layers stacked one after another
+- Dense(64, relu) → hidden layer 1, 64 neurons, ReLU activation
+- Dense(32, relu) → hidden layer 2, 32 neurons
+- Dense(16, relu) → hidden layer 3, 16 neurons
+- Dense(1)        → output layer, 1 neuron = predicts ONE price value
+  (No activation in output — regression needs raw number, not probability)
+- ReLU: f(x) = max(0,x) → passes positive values, blocks negatives
+- model.compile():
+    optimizer='adam' → smart gradient descent, adjusts learning rate automatically
+    loss='mse' → Mean Squared Error, measures how far predictions are from actual
+    metrics=['mae'] → also tracks Mean Absolute Error
+- model.summary() → prints layer names, output shapes, parameter count
+
+================================================================
+CELL 9 — Train the Model
+================================================================
+Code: history = model.fit(X_train, y_train, epochs=100, batch_size=32, validation_split=0.1)
+
+- model.fit() → starts training
+- epochs=100 → model sees all training data 100 times
+- batch_size=32 → processes 32 samples at a time before updating weights
+- validation_split=0.1 → keeps 10% of train data to check loss after each epoch
+- history → stores loss and mae values for every epoch (used for plotting)
+
+================================================================
+CELL 10 — Predict & Evaluate
+================================================================
+Code: y_pred = model.predict(X_test).flatten()
+      mse = mean_squared_error(y_test, y_pred)
+      rmse = np.sqrt(mse)
+      r2 = r2_score(y_test, y_pred)
+
+- model.predict(X_test) → gives predicted prices for test set (shape: 102x1)
+- .flatten() → converts 2D array to 1D array
+- mean_squared_error() → MSE = average of (actual - predicted)²  [lower = better]
+- np.sqrt(mse) → RMSE = root of MSE, same unit as price (easier to understand)
+- r2_score() → R2 Score: 1 = perfect, 0 = model = predicting average, <0 = bad
+
+================================================================
+CELL 11 — Plot Graphs
+================================================================
+Code: plt.plot(history.history['loss']...) — Loss graph
+      plt.scatter(y_test, y_pred...)       — Actual vs Predicted
+
+- Graph 1 (Loss vs Epochs):
+    Plots training loss and validation loss over 100 epochs
+    Both should go down — means model is learning
+    If val_loss goes up while train_loss goes down → overfitting
+
+- Graph 2 (Actual vs Predicted):
+    Each dot = one test house
+    X-axis = actual price, Y-axis = predicted price
+    Red dashed line = perfect prediction (y = x)
+    Dots close to red line = good model
+
+================================================================
+QUICK Q&A FOR TEACHER
+================================================================
+
+Q1. Boston Housing dataset? 
+- 506 samples, 13 input features like crime rate, rooms, tax rate. Target is MEDV — house price in $1000s. We predict house prices using these features.
+
+Q2. Type of problem? 
+- Regression — output is a continuous number (house price), not a category. Example: predicting 24.5 means $24,500.
+
+Q3. Why StandardScaler? 
+- Features have very different ranges — RM is 3-9 but TAX is 187-711. Network gets confused with unequal ranges. Scaler brings all features to mean=0, std=1 so all are equal.
+
+Q4. fit_transform on train, transform on test? 
+- fit_transform learns mean and std FROM training data then scales it. transform only applies those learned values to test data. We never fit on test data — that would be data leakage (model seeing test info during training).
+
+Q5. No activation in output layer? 
+- Regression needs any real number as output — like 24.5 or 38.2. Sigmoid limits output to 0-1, softmax is for classification. No activation means the neuron freely outputs whatever value it calculates.
+
+Q6. MSE and RMSE? 
+- MSE = average of (actual - predicted)². RMSE = square root of MSE, same unit as price. If RMSE = 3.5, predictions are off by ~$3,500 on average. Lower = better.
+
+Q7. R2 Score? 
+- Shows how well model fits data. R2=1 means perfect predictions. R2=0 means model is just predicting the average — useless. We want it close to 1.
+
+Q8. Epoch? 
+- One epoch = model sees all training data once. We use 100 epochs so model learns 100 times. More epochs = more learning, but too many causes overfitting.
+
+Q9. batch_size? 
+- Instead of updating weights after ALL data, model updates after every 32 samples. Faster training and more stable weight updates.
+
+Q10. Adam optimizer? 
+- Automatically adjusts learning rate during training. Smarter and faster than basic gradient descent. Works well for most problems.
+
+Q11. Overfitting? 
+- Model memorizes training data, performs poorly on new data. We detect it from the loss graph — train loss keeps falling but val loss starts rising.
+
+Q12. Why ReLU? 
+- f(x) = max(0,x) — passes positive values, blocks negatives. Simple, fast, and solves vanishing gradient problem that sigmoid has in deep networks.
+
+Q13. validation_split=0.1? 
+- 10% of training data is kept aside. Model doesn't train on it. After each epoch we check loss on this 10% to see if model is overfitting.
+
+Q14. Network architecture? 
+- Input(13) → Dense(64, ReLU) → Dense(32, ReLU) → Dense(16, ReLU) → Output(1, no activation). Compiled with MSE loss and Adam optimizer.

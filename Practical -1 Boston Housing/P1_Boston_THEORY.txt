@@ -1,0 +1,114 @@
+================================================================
+PRACTICAL 1 — THEORY
+Boston Housing Price Prediction using Deep Neural Network
+================================================================
+
+AIM:
+To predict Boston house prices using a Deep Neural Network (Regression).
+
+DATASET:
+- 506 samples, 13 input features, 1 target (MEDV = house price in $1000s)
+- Features: CRIM (crime rate), RM (rooms), TAX (tax rate), LSTAT (% poor), etc.
+
+================================================================
+1. WHAT IS REGRESSION?
+================================================================
+Regression predicts a continuous number (not a category).
+Example: Predicting house price = regression.
+         Predicting spam/not spam = classification.
+
+In this practical, we use a Deep Neural Network to do regression
+instead of traditional linear regression formula.
+
+================================================================
+2. DEEP NEURAL NETWORK (DNN)
+================================================================
+A DNN is a network with multiple hidden layers between input and output.
+
+Structure:
+  Input Layer  → takes 13 features
+  Hidden Layers → learn patterns from data
+  Output Layer  → gives predicted price (1 number)
+
+Each neuron: output = activation(w1x1 + w2x2 + ... + b)
+  w = weights (learned during training)
+  b = bias
+  activation = function applied (ReLU here)
+
+Our model:
+  Hidden Layer 1: 64 neurons, ReLU
+  Hidden Layer 2: 32 neurons, ReLU
+  Hidden Layer 3: 16 neurons, ReLU
+  Output Layer:    1 neuron, No activation
+
+================================================================
+3. ACTIVATION FUNCTION — ReLU
+================================================================
+Formula: f(x) = max(0, x)
+- Positive input → passes as-is
+- Negative input → becomes 0
+
+Why ReLU?
+- Allows network to learn non-linear patterns
+- Fast and simple
+- Solves vanishing gradient problem
+
+Why NO activation in output?
+- We need a raw number (price). Sigmoid/softmax would limit the range.
+
+================================================================
+4. DATA PREPROCESSING
+================================================================
+a) Train-Test Split:
+   80% training, 20% testing (test_size=0.2)
+   Model trains on 80%, evaluated on unseen 20%.
+
+b) Feature Scaling (StandardScaler):
+   Converts all features to Mean=0, Std=1
+   Formula: z = (x - mean) / std
+   WHY? Features have very different ranges.
+   Neural networks train poorly without scaling.
+   Fit on train data only → transform both train and test.
+
+================================================================
+5. COMPILATION & TRAINING
+================================================================
+Optimizer — Adam:
+  Smart gradient descent. Auto-adjusts learning rate.
+  Fast and works well for most problems.
+
+Loss — MSE (Mean Squared Error):
+  MSE = (1/n) × Σ(actual - predicted)²
+  Measures prediction error. Lower = better.
+
+Training (model.fit):
+  epochs=100   → sees all data 100 times
+  batch_size=32 → 32 samples per weight update
+  validation_split=0.1 → 10% kept for monitoring overfitting
+
+================================================================
+6. EVALUATION METRICS
+================================================================
+MSE  = average of squared errors (lower = better)
+RMSE = √MSE → same unit as price, easier to interpret
+R2 Score:
+  R2 = 1 → perfect prediction
+  R2 = 0 → model = predicting average (useless)
+  R2 close to 1 = good model
+
+================================================================
+7. OVERFITTING
+================================================================
+Overfitting = model memorizes training data, fails on new data.
+Sign: train loss goes down, val loss goes up.
+Solution: Dropout, more data, fewer layers.
+
+================================================================
+CONCLUSION
+================================================================
+- Built a 3-hidden-layer DNN for regression
+- Used StandardScaler for normalization
+- ReLU in hidden layers, no activation in output
+- Adam optimizer + MSE loss
+- Evaluated using RMSE and R2 Score
+================================================================

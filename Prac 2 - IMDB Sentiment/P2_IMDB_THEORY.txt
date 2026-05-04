@@ -1,0 +1,102 @@
+================================================================
+PRACTICAL 2 — THEORY
+IMDB Sentiment Analysis using Deep Neural Network
+================================================================
+
+AIM:
+To classify IMDB movie reviews as Positive (1) or Negative (0)
+using a Deep Neural Network — Binary Classification.
+
+DATASET:
+- 50,000 reviews (25,000 train + 25,000 test)
+- Already encoded as integers (each number = one word)
+- Labels: 0 = Negative, 1 = Positive
+
+================================================================
+1. WHAT IS SENTIMENT ANALYSIS?
+================================================================
+Sentiment Analysis = finding the emotional tone of text.
+Binary here: Positive or Negative review.
+
+Used in: product reviews, social media, customer feedback.
+
+Computers can't read text directly — we convert words to numbers.
+
+================================================================
+2. DATA PREPROCESSING
+================================================================
+a) num_words=10000:
+   Keep only top 10,000 most common words.
+   Rare words are ignored — reduces model size.
+
+b) pad_sequences (maxlen=200):
+   Reviews have different lengths. Neural network needs fixed size.
+   Short reviews → zeros added at end (padding='post')
+   Long reviews  → words cut from end (truncating='post')
+   After: all reviews = 200 words. Shape: (25000, 200)
+
+================================================================
+3. MODEL ARCHITECTURE
+================================================================
+Layer                   | Purpose
+------------------------|------------------------------------------
+Embedding(10000, 16)    | Word index → 16-dim dense vector
+GlobalAveragePooling1D  | Average all 200 word vectors → 1 vector
+Dense(64, ReLU)         | Learn patterns in review
+Dropout(0.5)            | Prevent overfitting (50% neurons off)
+Dense(32, ReLU)         | Learn deeper patterns
+Dropout(0.3)            | Prevent overfitting (30% neurons off)
+Dense(1, Sigmoid)       | Output probability (0 to 1)
+
+================================================================
+4. KEY CONCEPTS
+================================================================
+Embedding Layer:
+  Converts word integer to a 16-number vector.
+  Similar words get similar vectors.
+  Vectors are LEARNED during training.
+  Better than one-hot encoding (compact + meaningful).
+
+GlobalAveragePooling1D:
+  Takes average of all 200 word vectors.
+  Converts (200, 16) → (16,) — one vector for the whole review.
+
+Sigmoid Activation (output):
+  Formula: σ(x) = 1 / (1 + e^-x)
+  Output between 0 and 1 = probability.
+  > 0.5 → Positive, ≤ 0.5 → Negative.
+
+Dropout:
+  Randomly turns off neurons during training.
+  Forces other neurons to learn → prevents overfitting.
+  Turned OFF during testing.
+
+================================================================
+5. COMPILATION & TRAINING
+================================================================
+Optimizer: Adam — adaptive, fast, works well for NLP.
+
+Loss: Binary Cross-Entropy
+  Formula: Loss = -[y·log(ŷ) + (1-y)·log(1-ŷ)]
+  y = actual label, ŷ = predicted probability
+  Used for binary (2-class) problems.
+
+Training:
+  epochs=10, batch_size=128, validation_split=0.2
+
+================================================================
+6. EVALUATION
+================================================================
+- Test Accuracy: ~85-88%
+- If val_accuracy < train_accuracy by a lot → overfitting
+
+================================================================
+CONCLUSION
+================================================================
+- Binary classification using DNN on IMDB reviews
+- Embedding converts words to vectors
+- Sigmoid output for probability
+- Binary Cross-Entropy loss
+- Dropout prevents overfitting
+- ~85-88% accuracy on 25,000 unseen reviews
+================================================================
